@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour Virtual 3D - Casa Colonial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #canvas-container { width: 100vw; height: 100vh; }
+    </style>
+    <!-- Three.js e Controles de Câmera -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body class="bg-stone-900 text-white font-sans">
+
+    <!-- Interface Superior de Controle -->
+    <div class="absolute top-4 left-4 z-10 bg-black/70 backdrop-blur-md p-4 rounded-xl border border-amber-900/40 max-w-sm">
+        <h1 class="text-amber-500 font-bold text-lg">Casa Colonial Séc. XVIII</h1>
+        <p class="text-xs text-stone-300 mt-1">Use apenas o <b>mouse</b> para interagir:<br>
+        • Botão esquerdo: Girar visão 360°<br>
+        • Roda do mouse: Zoom<br>
+        • Botão direito: Mover posição</p>
+    </div>
+
+    <!-- Container do Renderizador 3D -->
+    <div id="canvas-container"></div>
+
+    <script>
+        // 1. Configuração da Cena, Câmera e Renderizador
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xdbeade); // Céu suave
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(12, 6, 12);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        // 2. Controles EXCLUSIVOS por Mouse / Touch
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 - 0.01; // Impede a câmara de ir abaixo do solo
+        controls.minDistance = 3;
+        controls.maxDistance = 25;
+
+        // 3. Iluminação
+        const ambientLight = new THREE.AmbientLight(0xfff8ed, 0.8);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
+        sunLight.position.set(15, 25, 15);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        scene.add(sunLight);
+
+        // 4. Materiais
+        const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xe3d3be, roughness: 0.9 }); // Barro / Taipa
+        const woodMaterial = new THREE.MeshStandardMaterial({ color: 0x4a2e18, roughness: 0.7 }); // Madeira Rústica
+        const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x2b1a0e, roughness: 0.5 }); // Caixilhos
+        const roofMaterial = new THREE.MeshStandardMaterial({ color: 0xa8482a, roughness: 0.8 });  // Telhas de barro
+        const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x734825, roughness: 0.7 }); // Chão batera
+
+        const houseGroup = new THREE.Group();
+
+        // DIMENSÕES DA CASA: Largura (Eixo X) = 10m | Comprimento (Eixo Z) = 8m
+        // Altura da parede base = 3m | Altura da ponta do telhado = 5m
+
+        // --- PISO ---
+        const floorGeom = new THREE.BoxGeometry(10, 0.2, 8);
+        const floor = new THREE.Mesh(floorGeom, floorMaterial);
+        floor.position.y = -0.1;
+        floor.receiveShadow = true;
+        houseGroup.add(floor);
+
+        // --- PAREDES NORTE E SUL (COM TOPO TRIANGULAR / FRONTÃO) ---
+        const createGableWallShape = () => {
+            const shape = new THREE.Shape();
+            shape.moveTo(-5, 0);
+            shape.lineTo(5, 0);
+            shape.lineTo(5, 3);
+            shape.lineTo(0, 5); // Ponta do triângulo do telhado
+            shape.lineTo(-5, 3);
+            shape.closePath();
+            return shape;
+        };
+
+        const gableExtrudeSettings = { depth: 0.3, bevelEnabled: false };
+
+        // Parede Sul (Com janela central no andar superior e janela da cozinha no térreo)
+        const wallSouthGeom = new THREE.ExtrudeGeometry(createGableWallShape(), gableExtrudeSettings);
+        const wallSouth = new THREE.Mesh(wallSouthGeom, wallMaterial);
+        wallSouth.position.set(0, 0, 4); // Lado Sul
+        wallSouth.castShadow = true;
+        wallSouth.receiveShadow = true;
+        houseGroup.add(wallSouth);
+
+        // Parede Norte (Gêmea da Sul)
+        const wallNorth = wallSouth.clone();
+        wallNorth.position.set(0, 0, -4.3); // Lado Norte
+        houseGroup.add(wallNorth);
+
+        // --- PAREDES LESTE E OESTE (RETANGULARES - LATERAIS) ---
+        const wallEastGeom = new THREE.BoxGeometry(0.3, 3, 8);
+        
+        // Parede Leste (Fachada da Entrada)
+        const wallEast = new THREE.Mesh(wallEastGeom, wallMaterial);
+        wallEast.position.set(5, 1.5, 0);
+        wallEast.castShadow = true;
+        wallEast.receiveShadow = true;
+        houseGroup.add(wallEast);
+
+        // Parede Oeste (Fachada Traseira)
+        const wallWest = new THREE.Mesh(wallEastGeom, wallMaterial);
+        wallWest.position.set(-5, 1.5, 0);
+        wallWest.castShadow = true;
+        wallWest.receiveShadow = true;
+        houseGroup.add(wallWest);
+
+        // --- TELHADO DE DUAS ÁGUAS (ACOMPANHA O TRIÂNGULO) ---
+        const roofGroup = new THREE.Group();
+        const roofTileGeom = new THREE.BoxGeometry(5.8, 0.15, 8.8);
+
+        // Água Direita (Leste)
+        const roofEast = new THREE.Mesh(roofTileGeom, roofMaterial);
+        roofEast.position.set(2.4, 4.0, 0);
+        roofEast.rotation.z = -Math.atan2(2, 5); // Angulação exata da ponta triangular (3m a 5m)
+        roofEast.castShadow = true;
+        roofGroup.add(roofEast);
+
+        // Água Esquerda (Oeste)
+        const roofWest = new THREE.Mesh(roofTileGeom, roofMaterial);
+        roofWest.position.set(-2.4, 4.0, 0);
+        roofWest.rotation.z = Math.atan2(2, 5);
+        roofWest.castShadow = true;
+        roofGroup.add(roofWest);
+
+        houseGroup.add(roofGroup);
+
+        // --- ELEMENTOS ARQUITETÓNICOS: PORTA E JANELAS ---
+
+        // Função para criar Janela Colonial Rústica com Caixilho e Grades
+        const createColonialWindow = (x, y, z, rotationY = 0) => {
+            const windowGroup = new THREE.Group();
+
+            // Moldura / Caixilho de Madeira
+            const frameGeom = new THREE.BoxGeometry(0.1, 1.4, 1.0);
+            const frame = new THREE.Mesh(frameGeom, frameMaterial);
+            windowGroup.add(frame);
+
+            // Folhas da Janela (Madeira)
+            const shutterGeom = new THREE.BoxGeometry(0.05, 1.3, 0.45);
+            const leftShutter = new THREE.Mesh(shutterGeom, woodMaterial);
+            leftShutter.position.set(0, 0, -0.22);
+            const rightShutter = new THREE.Mesh(shutterGeom, woodMaterial);
+            rightShutter.position.set(0, 0, 0.22);
+            windowGroup.add(leftShutter, rightShutter);
+
+            // Grades / Barroteamento Vertical (Estilo colonial)
+            for (let i = -0.35; i <= 0.35; i += 0.17) {
+                const barGeom = new THREE.CylinderGeometry(0.015, 0.015, 1.3);
+                const bar = new THREE.Mesh(barGeom, frameMaterial);
+                bar.position.set(0.06, 0, i);
+                windowGroup.add(bar);
+            }
+
+            windowGroup.position.set(x, y, z);
+            windowGroup.rotation.y = rotationY;
+            return windowGroup;
+        };
+
+        // 1. PORTA PRINCIPAL DE MADEIRA (Entrada Leste)
+        const doorGroup = new THREE.Group();
+        const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.3, 1.2), frameMaterial);
+        const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.2, 1.1), woodMaterial);
+        doorPanel.position.set(-0.02, 0, 0);
+        doorGroup.add(doorFrame, doorPanel);
+        doorGroup.position.set(5.08, 1.15, 1.5); // Entrada Leste (Sala de Recepção)
+        houseGroup.add(doorGroup);
+
+        // 2. JANELAS DA FACHADA LESTE (Ao lado da porta)
+        houseGroup.add(createColonialWindow(5.08, 1.5, -1.5)); // Janela da Sala
+        houseGroup.add(createColonialWindow(5.08, 1.5, 3.2));  // Janela ao lado da porta
+
+        // 3. JANELAS DAS FACHADAS NORTE E OESTE (Quartos)
+        houseGroup.add(createColonialWindow(-5.08, 1.5, 2.0));  // Janela Quarto Oeste
+        houseGroup.add(createColonialWindow(-5.08, 1.5, -2.0)); // Janela Quarto Oeste Norte
+        houseGroup.add(createColonialWindow(0, 1.5, -4.2, Math.PI / 2)); // Janela Parede Norte
+
+        // 4. JANELAS DA FACHADA SUL (Cozinha e Sótão /conforme desenho técnico)
+        houseGroup.add(createColonialWindow(-1.8, 1.5, 4.2, Math.PI / 2)); // Janela Térreo Sul
+        houseGroup.add(createColonialWindow(1.8, 1.5, 4.2, Math.PI / 2));  // Janela Térreo Sul (Cozinha)
+        houseGroup.add(createColonialWindow(0, 3.8, 4.2, Math.PI / 2));    // Janela Superior do Frontão
+
+        // --- FOGÃO DE LENHA (Cozinha - Quadrante Sul/Leste) ---
+        const stoveGroup = new THREE.Group();
+        const stoveBase = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.85, 1.2), wallMaterial);
+        const stoveTop = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.08, 1.25), frameMaterial);
+        stoveTop.position.y = 0.45;
+        const chimney = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 3), woodMaterial);
+        chimney.position.set(0.5, 1.8, 0);
+        stoveGroup.add(stoveBase, stoveTop, chimney);
+        stoveGroup.position.set(3.2, 0.42, 2.5);
+        houseGroup.add(stoveGroup);
+
+        scene.add(houseGroup);
+
+        // --- PLANO DE CHÃO EXTERNO (TERREIRO) ---
+        const groundGeom = new THREE.PlaneGeometry(60, 60);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x4d5e35, roughness: 1 });
+        const ground = new THREE.Mesh(groundGeom, groundMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // 5. Redimensionamento Responsivo
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 6. Loop de Animação
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); // Atualiza a navegação suave por mouse
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
