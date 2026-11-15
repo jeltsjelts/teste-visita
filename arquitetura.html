@@ -19,12 +19,12 @@
                 extend: {
                     colors: {
                         brand: {
-                            bg: '#FDFBF7',       /* Fundo suave tom papel/creme colonial */
-                            card: '#FFFFFF',     /* Fundo dos cards */
-                            primary: '#8B4513',  /* Terracota/Madeira Colonial */
-                            dark: '#2C221E',     /* Texto escuro quente */
-                            accent: '#D97706',   /* Detalhes em ouro/latão */
-                            muted: '#786C66'     /* Textos secundários */
+                            bg: '#FDFBF7',
+                            card: '#FFFFFF',
+                            primary: '#8B4513',
+                            dark: '#2C221E',
+                            accent: '#D97706',
+                            muted: '#786C66'
                         }
                     },
                     fontFamily: {
@@ -38,15 +38,17 @@
 </head>
 <body class="bg-brand-bg text-brand-dark font-sans antialiased pb-24">
 
-    <!-- Cabeçalho Fixo / Acessibilidade -->
+    <!-- Cabeçalho Fixo -->
     <header class="sticky top-0 z-50 bg-brand-bg/90 backdrop-blur-md border-b border-brand-primary/10 px-4 py-3 flex justify-between items-center">
         <div class="flex items-center space-x-2">
             <span class="w-3 h-3 rounded-full bg-brand-primary inline-block"></span>
             <span class="font-serif font-bold tracking-wide text-brand-dark text-sm uppercase">Casa do Tatuapé</span>
         </div>
-        <div class="flex space-x-3 text-brand-muted text-sm">
-            <button aria-label="Acessibilidade - Ajustar Fonte" class="p-1.5 hover:text-brand-primary transition"><i class="fa-solid fa-universal-access text-base"></i></button>
-            <button aria-label="Idioma" class="p-1.5 hover:text-brand-primary font-semibold transition">PT</button>
+        <div class="flex items-center space-x-3 text-sm">
+            <a href="index.html" class="px-3 py-1.5 bg-brand-primary text-white rounded-full text-xs font-semibold hover:bg-brand-primary/90 transition flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-street-view"></i>
+                <span>Visita Virtual</span>
+            </a>
         </div>
     </header>
 
@@ -55,7 +57,6 @@
 
         <!-- Banner com a Foto da Obra/Espaço -->
         <section class="relative rounded-2xl overflow-hidden shadow-lg group bg-stone-200">
-            <!-- Imagem da Obra  -->
             <img src="imagens/geral.jpg" 
                  alt="Arquitetura Colonial" 
                  class="w-full h-80 object-cover transform group-hover:scale-105 transition duration-500">
@@ -64,7 +65,7 @@
             
             <div class="absolute bottom-4 left-4 right-4 text-white">
                 <span class="inline-block px-2.5 py-1 bg-brand-accent/90 text-white text-xs font-semibold uppercase tracking-wider rounded-full mb-2 backdrop-blur-sm">
-                    Séc. XVIII • Edifício
+                    Séc. XVII / XVIII • Edifício
                 </span>
                 <h1 class="font-serif text-2xl font-bold leading-tight">Arquitetura da Casa do Tatuapé</h1>
             </div>
@@ -80,10 +81,8 @@
                 <span class="text-xs text-brand-muted">02:15 min</span>
             </div>
 
-            <!-- Player de Áudio HTML5 Nativo Oculto + Interface Customizada -->
             <audio id="audio-player" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
 
-            <!-- Controles Customizados -->
             <div class="flex items-center space-x-4">
                 <button id="btn-play" class="w-12 h-12 rounded-full bg-brand-primary text-white flex items-center justify-center shadow-md hover:bg-brand-primary/90 transition">
                     <i id="play-icon" class="fa-solid fa-play text-lg ml-0.5"></i>
@@ -99,59 +98,58 @@
                 </div>
             </div>
 
-            <!-- Botão de Transcrição (Acessibilidade) -->
+            <!-- Botão de Transcrição -->
             <details class="text-xs text-brand-muted pt-2 border-t border-stone-100">
                 <summary class="cursor-pointer font-medium hover:text-brand-primary transition flex items-center space-x-1">
                     <span>Ver transcrição em texto</span>
                 </summary>
-                <p class="mt-2 text-brand-dark/80 leading-relaxed bg-brand-bg p-3 rounded-lg">
-                    "A Casa do Tatuapé é um raro exemplar da arquitetura colonial do século XVII em São Paulo, construída com a técnica tradicional de taipa de pilão. 
-Características Arquitetônicas
-•	Estrutura de Taipa de Pilão: As paredes grossas e resistentes foram erguidas com barro socado entre fôrmas de madeira, utilizando materiais retirados da própria região próxima ao Rio Tietê. 
-•	Telhado de Duas Águas: Diferente de outras construções bandeiristas da época que usavam telhados em quatro águas, a casa destaca-se por sua cobertura com dois planos inclinados simétricos.
-•	Planta Interna: O espaço conta com seis cômodos principais e dois sótãos. 
-•	Janelas sem Vidro: As aberturas possuem grades de madeira maciça e grandes vãos projetados para garantir a ventilação natural e a proteção contra intempéries e animais, sem o uso de vidros (tecnologia escassa no período). 
-•	Pisos e Materiais: O piso original era formado por tijolos assentados de maneira rústica diretamente sobre o barro batido.
-"
-                </p>
+                <div class="mt-2 text-brand-dark/80 leading-relaxed bg-brand-bg p-3 rounded-lg space-y-2">
+                    <p>A Casa do Tatuapé é um raro exemplar da arquitetura colonial do século XVII em São Paulo, construída com a técnica tradicional de taipa de pilão.</p>
+                    <p class="font-semibold">Características Arquitetônicas:</p>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li><strong>Estrutura de Taipa de Pilão:</strong> As paredes grossas e resistentes foram erguidas com barro socado entre fôrmas de madeira, utilizando materiais retirados da própria região próxima ao Rio Tietê.</li>
+                        <li><strong>Telhado de Duas Águas:</strong> Diferente de outras construções bandeiristas da época que usavam telhados em quatro águas, a casa destaca-se por sua cobertura com dois planos inclinados simétricos.</li>
+                        <li><strong>Planta Interna:</strong> O espaço conta com seis cômodos principais e dois sótãos.</li>
+                        <li><strong>Janelas sem Vidro:</strong> As aberturas possuem grades de madeira maciça e grandes vãos projetados para garantir a ventilação natural e a proteção contra intempéries e animais, sem o uso de vidros.</li>
+                        <li><strong>Pisos e Materiais:</strong> O piso original era formado por tijolos assentados de maneira rústica diretamente sobre o barro batido.</li>
+                    </ul>
+                </div>
             </details>
         </section>
 
         <!-- Ficha Técnica e Descrição Detalhada -->
         <section class="space-y-4">
-            <!-- Atributos Chave -->
             <div class="grid grid-cols-2 gap-3 text-sm">
                 <div class="bg-brand-card p-3 rounded-xl border border-stone-200/60">
                     <span class="text-xs text-brand-muted block">Material / Técnica</span>
-                    <strong class="text-brand-dark font-medium">Barro e Madeira</strong>
+                    <strong class="text-brand-dark font-medium">Taipa de Pilão e Madeira</strong>
                 </div>
                 <div class="bg-brand-card p-3 rounded-xl border border-stone-200/60">
                     <span class="text-xs text-brand-muted block">Período Histórico</span>
-                    <strong class="text-brand-dark font-medium">c. 1760 – 1780</strong>
+                    <strong class="text-brand-dark font-medium">Séc. XVII (1698)</strong>
                 </div>
             </div>
 
-            <!-- Abas ou Seções de Texto -->
             <div class="bg-brand-card p-5 rounded-2xl shadow-sm border border-stone-200/80 space-y-3">
                 <h2 class="font-serif font-semibold text-lg text-brand-primary border-b border-stone-100 pb-2">
                     Contexto Histórico
                 </h2>
                 <p class="text-sm text-brand-dark/90 leading-relaxed">
-                    . Registrada em 1698, foi construída por Mathias Rodrigues da Silva em terreno do padre Matheus Nunes de Siqueira.
+                    Registrada em 1698, foi construída por Mathias Rodrigues da Silva em terreno do padre Matheus Nunes de Siqueira.
                 </p>
                 <p class="text-sm text-brand-dark/90 leading-relaxed">
-                     No século XIX, abrigou uma olaria que produzia telhas e, com a imigração italiana, também tijolos.
+                    No século XIX, abrigou uma olaria que produzia telhas e, com a imigração italiana, também tijolos.
                 </p>
             </div>
         </section>
 
     </main>
 
-    <!-- Barra de Navegação Inferior Fixa (App-like UX) -->
+    <!-- Barra de Navegação Inferior Fixa -->
     <nav class="fixed bottom-0 inset-x-0 bg-brand-card border-t border-stone-200/80 py-2.5 px-6 flex justify-around items-center z-50 shadow-lg">
-        <a href="#" class="flex flex-col items-center space-y-1 text-brand-primary font-medium text-xs">
+        <a href="arquitetura.html" class="flex flex-col items-center space-y-1 text-brand-primary font-medium text-xs">
             <i class="fa-solid fa-layer-group text-lg"></i>
-            <span>Acervo</span>
+            <span>Arquitetura</span>
         </a>
         <a href="index.html" class="flex flex-col items-center space-y-1 text-brand-muted hover:text-brand-primary transition text-xs">
             <i class="fa-solid fa-map-location-dot text-lg"></i>
@@ -163,7 +161,6 @@ Características Arquitetônicas
         </a>
     </nav>
 
-    <!-- Script Simples para o Player de Áudio -->
     <script>
         const audio = document.getElementById('audio-player');
         const btnPlay = document.getElementById('btn-play');
