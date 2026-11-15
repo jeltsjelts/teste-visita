@@ -78,11 +78,15 @@ Para conectar o espaço físico do museu à experiência digital sem necessidade
 ├── README.md                    # Documentação técnica do projeto
 ├── audio/                       # Arquivos de narração em áudio
 │   └── audio.mp3
-├── qrcodes/                     # Ativos de sinalética digital (QR Codes por rota)
-│   ├── qr1.png                  # QR Code -> Visita Virtual (/index.html)
-│   ├── qr2.png                  # QR Code -> Arquitetura e Audioguia (/arquitetura.html)
-│   ├── qr3.png                  # QR Code -> Livro de Visitas (/livro-visitas.html)
-│   └── qr4.png                  # QR Code -> Dashboard Restrito (/painel-gestao-98.html)
+├── qrcodes/                              # Ativos de sinalética digital (QR Codes por rota)
+│   ├── qr1.png                           # QR Code -> Visita Virtual (/index.html)
+│   ├── visita-virtual-tatuape-qr1.pdf    # QR Code da visita virtual em pdf             
+│   ├── qr2.png                           # QR Code -> Arquitetura e Audioguia (/arquitetura.html)
+│   ├── arquitetura-tatuape-qr2.pdf       # QR Code da página da arquitetura em pdf
+│   ├── qr3.png                           # QR Code -> Livro de Visitas (/livro-visitas.html)
+│   ├──livro-visitas-qr3.pdf              # QR Code da página do Livro de visitas em pdf
+│   ├── qr4.png                           # QR Code -> Dashboard Restrito (/painel-gestao-98.html)
+│   └── dashboard-qr4.pdf                 # QR Code do dashboard em pdf
 └── imagens/                     # Acervo fotográfico otimizado dos ambientes
     ├── alpendrev2.jpg
     ├── corredor_oeste.jpg
