@@ -26,7 +26,7 @@ O projeto integra **sinalética digital presencial** (via QR Codes físicos dist
 * **Mural Público em Tempo Real:** Exibe as últimas assinaturas registradas diretamente no banco de dados em nuvem (com *fallback* automático para `localStorage` em ambiente local).
 
 ### 📊 4. Dashboard de Gestão (`painel-gestao-98.html`)
-* **Acesso Restrito:** Página desvinculada dos menus públicos, protegida contra indexação (`noindex, nofollow`) e bloqueada por senha administrativa.
+* **Acesso Restrito:** Página desvinculada dos menus públicos, protegida contra indexação (`noindex, nofollow`) e bloqueada por senha administrativa. Acessivel em: https://teste-visita-1.onrender.com/painel-gestao-98.html, senha: tatuape98
 * **Indicadores e Gráficos:** Cálculo automático de total de visitas, média de idade, principal localidade de origem, taxa de engajamento com mensagens, gráficos de faixa etária e origem, além de exportação completa em `.csv`.
 
 ---
