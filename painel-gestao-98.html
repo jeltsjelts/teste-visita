@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Dashboard Administrativo - Museu Casa do Tatuapé</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
+
+    <!-- Tela de Bloqueio por Senha -->
+    <div id="login-screen" class="fixed inset-0 bg-slate-950 flex items-center justify-center p-4 z-50">
+        <form id="login-form" class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl">
+            <div class="text-center space-y-1">
+                <i class="fa-solid fa-lock text-amber-500 text-2xl"></i>
+                <h1 class="text-lg font-bold">Acesso Restrito — Gestão</h1>
+                <p class="text-xs text-slate-400">Museu Casa do Tatuapé</p>
+            </div>
+            <input type="password" id="admin-pass" placeholder="Digite a senha de acesso" required
+                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm focus:outline-none focus:border-amber-500">
+            <p id="login-error" class="hidden text-xs text-red-400 text-center">Senha incorreta.</p>
+            <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl text-sm transition">
+                Entrar no Painel
+            </button>
+        </form>
+    </div>
+
+    <!-- Conteúdo do Dashboard -->
+    <div id="dashboard-content" class="hidden max-w-5xl mx-auto p-6 space-y-6">
+        <header class="flex flex-wrap justify-between items-center gap-4 border-b border-slate-800 pb-4">
+            <div>
+                <h1 class="text-xl font-bold text-white">Indicadores de Visitação — Casa do Tatuapé</h1>
+                <p class="text-xs text-slate-400">Monitoramento demográfico e mensagens do Livro de Visitas</p>
+            </div>
+            <button onclick="exportCSV()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-2">
+                <i class="fa-solid fa-file-csv"></i>
+                <span>Exportar CSV</span>
+            </button>
+        </header>
+
+        <!-- Cards de KPIs -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl">
+                <span class="text-xs text-slate-400">Total de Registros</span>
+                <p id="kpi-total" class="text-2xl font-bold text-amber-400 mt-1">0</p>
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl">
+                <span class="text-xs text-slate-400">Média de Idade</span>
+                <p id="kpi-idade" class="text-2xl font-bold text-sky-400 mt-1">--</p>
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl">
+                <span class="text-xs text-slate-400">Origem Principal</span>
+                <p id="kpi-origem" class="text-lg font-bold text-emerald-400 mt-1 truncate">--</p>
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl">
+                <span class="text-xs text-slate-400">Com Mensagem</span>
+                <p id="kpi-msgs" class="text-2xl font-bold text-purple-400 mt-1">0%</p>
+            </div>
+        </section>
+
+        <!-- Gráficos -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl">
+                <h2 class="text-sm font-semibold text-slate-200 mb-4">Distribuição por Faixa Etária</h2>
+                <canvas id="chart-idades" height="200"></canvas>
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl">
+                <h2 class="text-sm font-semibold text-slate-200 mb-4">Top 5 Localidades de Origem</h2>
+                <canvas id="chart-origens" height="200"></canvas>
+            </div>
+        </section>
+
+        <!-- Tabela Completa -->
+        <section class="bg-slate-800/80 border border-slate-700 rounded-2xl overflow-hidden">
+            <div class="p-4 border-b border-slate-700">
+                <h2 class="text-sm font-semibold text-slate-200">Registros Detalhados</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-900/60 text-slate-400 uppercase">
+                        <tr>
+                            <th class="px-4 py-3">Data</th>
+                            <th class="px-4 py-3">Nome</th>
+                            <th class="px-4 py-3">Idade</th>
+                            <th class="px-4 py-3">Origem</th>
+                            <th class="px-4 py-3">Mensagem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-slate-700/60"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const SENHA_ADMIN = 'tatuape98';
+        // Usa as mesmas credenciais Supabase do livro-visitas.html
+        const SUPABASE_URL = 'https://ollqdcwjgbbycximlxbe.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_ZFjxghQhj6k2KqGEQGbKcg_0D8TBgkF';
+
+        let allData = [];
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const val = document.getElementById('admin-pass').value;
+            if (val === SENHA_ADMIN) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('dashboard-content').classList.remove('hidden');
+                initDashboard();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        });
+
+        async function initDashboard() {
+            if (SUPABASE_URL && SUPABASE_KEY) {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/visitas?select=*&order=created_at.desc`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
+                allData = await res.json();
+            } else {
+                allData = JSON.parse(localStorage.getItem('tatuape_visitas') || '[]').reverse();
+            }
+
+            renderMetrics();
+            renderCharts();
+            renderTable();
+        }
+
+        function renderMetrics() {
+            document.getElementById('kpi-total').textContent = allData.length;
+
+            const idades = allData.map(d => d.idade).filter(i => typeof i === 'number' && i > 0);
+            const mediaIdade = idades.length ? Math.round(idades.reduce((a, b) => a + b, 0) / idades.length) + ' anos' : '--';
+            document.getElementById('kpi-idade').textContent = mediaIdade;
+
+            const origensCount = {};
+            allData.forEach(d => {
+                if (d.origem) {
+                    const key = d.origem.trim();
+                    origensCount[key] = (origensCount[key] || 0) + 1;
+                }
+            });
+            const topOrigem = Object.entries(origensCount).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('kpi-origem').textContent = topOrigem ? `${topOrigem[0]} (${topOrigem[1]})` : '--';
+
+            const comMsg = allData.filter(d => d.mensagem && d.mensagem.trim().length > 0).length;
+            const pctMsg = allData.length ? Math.round((comMsg / allData.length) * 100) : 0;
+            document.getElementById('kpi-msgs').textContent = `${pctMsg}%`;
+        }
+
+        function renderCharts() {
+            // Faixas etárias
+            const faixas = { 'Até 17': 0, '18–29': 0, '30–44': 0, '45–59': 0, '60+': 0, 'Não inf.': 0 };
+            allData.forEach(d => {
+                if (!d.idade) faixas['Não inf.']++;
+                else if (d.idade < 18) faixas['Até 17']++;
+                else if (d.idade < 30) faixas['18–29']++;
+                else if (d.idade < 45) faixas['30–44']++;
+                else if (d.idade < 60) faixas['45–59']++;
+                else faixas['60+']++;
+            });
+
+            new Chart(document.getElementById('chart-idades'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(faixas),
+                    datasets: [{
+                        label: 'Visitantes',
+                        data: Object.values(faixas),
+                        backgroundColor: '#d97706',
+                        borderRadius: 6
+                    }]
+                },
+                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
+            });
+
+            // Origens
+            const origensCount = {};
+            allData.forEach(d => {
+                const key = d.origem ? d.origem.trim() : 'Não informado';
+                origensCount[key] = (origensCount[key] || 0) + 1;
+            });
+            const sortedOrigens = Object.entries(origensCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+            new Chart(document.getElementById('chart-origens'), {
+                type: 'doughnut',
+                data: {
+                    labels: sortedOrigens.map(o => o[0]),
+                    datasets: [{
+                        data: sortedOrigens.map(o => o[1]),
+                        backgroundColor: ['#d97706', '#0284c7', '#10b981', '#8b5cf6', '#64748b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1', font: { size: 11 } } } } }
+            });
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = allData.map(d => {
+                const date = d.created_at ? new Date(d.created_at).toLocaleDateString('pt-BR') : '--';
+                return `
+                    <tr class="hover:bg-slate-800/50">
+                        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${date}</td>
+                        <td class="px-4 py-3 font-medium text-white">${d.nome || ''}</td>
+                        <td class="px-4 py-3 text-slate-300">${d.idade || '-'}</td>
+                        <td class="px-4 py-3 text-slate-300">${d.origem || '-'}</td>
+                        <td class="px-4 py-3 text-slate-300">${d.mensagem || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function exportCSV() {
+            const header = ['Data', 'Nome', 'Idade', 'Origem', 'Mensagem'];
+            const rows = allData.map(d => [
+                d.created_at || '',
+                `"${(d.nome || '').replace(/"/g, '""')}"`,
+                d.idade || '',
+                `"${(d.origem || '').replace(/"/g, '""')}"`,
+                `"${(d.mensagem || '').replace(/"/g, '""')}"`
+            ]);
+            const csv = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'relatorio-visitantes-tatuape.csv';
+            a.click();
+        }
+    </script>
+</body>
+</html>
